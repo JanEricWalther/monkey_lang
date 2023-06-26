@@ -6,10 +6,15 @@ import (
 	"testing"
 )
 
-const input = `
-	let x 5;
-	let = 10;
-	let 838383;
+const letInput = `
+	let x = 5;
+	let y = 10;
+	let foobar = 838383;
+`
+const returnInput = `
+	return 5;
+	return 10;
+	return 992233;
 `
 
 type expected struct {
@@ -17,7 +22,7 @@ type expected struct {
 }
 
 func TestLetStatements(t *testing.T) {
-	l := lexer.New(input)
+	l := lexer.New(letInput)
 	p := New(l)
 
 	program := p.ParseProgram()
@@ -39,6 +44,27 @@ func TestLetStatements(t *testing.T) {
 		stmt := program.Statements[i]
 		if !testLetStatements(t, stmt, test.Identifier) {
 			return
+		}
+	}
+}
+
+func TestReturnStatements(t *testing.T) {
+	l := lexer.New(returnInput)
+	p := New(l)
+	program := p.ParseProgram()
+	checkParserErrors(t, p)
+
+	if len(program.Statements) != 3 {
+		t.Fatalf("program.Statements does not contain 3 statemenets. got %d", len(program.Statements))
+	}
+	for _, statement := range program.Statements {
+		returnStatement, ok := statement.(*ast.ReturnStatement)
+		if !ok {
+			t.Errorf("statement not ReturnStatement. got %q", statement)
+			continue
+		}
+		if returnStatement.TokenLiteral() != "return" {
+			t.Errorf("returnStatement TokenLiteral not 'return'. got %q", returnStatement.TokenLiteral())
 		}
 	}
 }

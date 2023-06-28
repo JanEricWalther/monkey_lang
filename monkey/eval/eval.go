@@ -215,6 +215,9 @@ func applyFunction(fn object.Object, args []object.Object) object.Object {
 	if !ok {
 		return newError("not a function: %s", fn.Type())
 	}
+	if len(args) != len(f.Parameters) {
+		return newError("invalid parameter length. expected %d. got %d", len(f.Parameters), len(args))
+	}
 	newEnv := extendFunctionEnv(f, args)
 	evaluated := Eval(f.Body, newEnv)
 	return unwrapReturnValue(evaluated)

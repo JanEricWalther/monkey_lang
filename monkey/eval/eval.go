@@ -43,6 +43,8 @@ func Eval(node ast.Node, env *object.Environment) object.Object {
 		return &object.Integer{Value: node.Value}
 	case *ast.Boolean:
 		return booleanObject(node.Value)
+	case *ast.StringLiteral:
+		return &object.String{Value: node.Value}
 	case *ast.PrefixExpression:
 		right := Eval(node.Right, env)
 		if isError(right) {
@@ -120,6 +122,8 @@ func evalInfixExpression(operator string, left, right object.Object) object.Obje
 	switch {
 	case left.Type() == object.INTEGER_OBJ && right.Type() == object.INTEGER_OBJ:
 		return evalIntegerInfixExpression(operator, left, right)
+	case left.Type() == object.STRING_OBJ && right.Type() == object.STRING_OBJ:
+		return evalStringInfixExpression(operator, left, right)
 	case operator == "==":
 		return booleanObject(left == right)
 	case operator == "!=":
@@ -178,6 +182,21 @@ func evalIntegerInfixExpression(operator string, left, right object.Object) obje
 	}
 }
 
+func evalStringInfixExpression(operator string, left, right object.Object) object.Object {
+	leftVal := left.(*object.String).Value
+	rightVal := right.(*object.String).Value
+	switch operator {
+	case "+":
+		return &object.String{Value: leftVal + rightVal}
+	case "==":
+		return booleanObject(leftVal == rightVal)
+	case "!=":
+		return booleanObject(leftVal != rightVal)
+	default:
+		return newError("unknown operator: %s %s %s", left.Type(), operator, right.Type())
+	}
+}
+
 func evalIfExpression(ie *ast.IfExpression, env *object.Environment) object.Object {
 	condition := Eval(ie.Condition, env)
 	if isError(condition) {
@@ -216,7 +235,7 @@ func applyFunction(fn object.Object, args []object.Object) object.Object {
 		return newError("not a function: %s", fn.Type())
 	}
 	if len(args) != len(f.Parameters) {
-		return newError("invalid parameter length. expected %d. got %d", len(f.Parameters), len(args))
+		return newError("invalid parameter count. expected %d. got %d", len(f.Parameters), len(args))
 	}
 	newEnv := extendFunctionEnv(f, args)
 	evaluated := Eval(f.Body, newEnv)

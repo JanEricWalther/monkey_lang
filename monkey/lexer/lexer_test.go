@@ -25,6 +25,8 @@ const input = `
 
 	10 == 10;
 	10 != 9;
+	"foobar";
+	"foo bar";
 `
 
 type expected struct {
@@ -106,6 +108,10 @@ func TestNextToken(t *testing.T) {
 		{token.INT, "10"},
 		{token.NOT_EQ, "!="},
 		{token.INT, "9"},
+		{token.SEMI, ";"},
+		{token.STRING, "foobar"},
+		{token.SEMI, ";"},
+		{token.STRING, "foo bar"},
 		{token.SEMI, ";"},
 		{token.EOF, ""},
 	}

@@ -211,11 +211,14 @@ func evalIfExpression(ie *ast.IfExpression, env *object.Environment) object.Obje
 }
 
 func evalIdentifier(node *ast.Identifier, env *object.Environment) object.Object {
-	val, ok := env.Get(node.Value)
-	if !ok {
-		return newError("identifier not found: " + node.Value)
+	if val, ok := env.Get(node.Value); ok {
+		return val
 	}
-	return val
+
+	if builtin, ok := builtins[node.Value]; ok {
+		return builtin
+	}
+	return newError("identifier not found: " + node.Value)
 }
 
 func evalExpressions(exps []ast.Expression, env *object.Environment) (result []object.Object) {
@@ -230,16 +233,20 @@ func evalExpressions(exps []ast.Expression, env *object.Environment) (result []o
 }
 
 func applyFunction(fn object.Object, args []object.Object) object.Object {
-	f, ok := fn.(*object.Function)
-	if !ok {
+	switch fn := fn.(type) {
+	case *object.Function:
+		if len(args) != len(fn.Parameters) {
+			return newError("invalid parameter count. expected %d. got %d", len(fn.Parameters), len(args))
+		}
+		newEnv := extendFunctionEnv(fn, args)
+		evaluated := Eval(fn.Body, newEnv)
+		return unwrapReturnValue(evaluated)
+	case *object.Builtin:
+		return fn.Fn(args...)
+	default:
 		return newError("not a function: %s", fn.Type())
+
 	}
-	if len(args) != len(f.Parameters) {
-		return newError("invalid parameter count. expected %d. got %d", len(f.Parameters), len(args))
-	}
-	newEnv := extendFunctionEnv(f, args)
-	evaluated := Eval(f.Body, newEnv)
-	return unwrapReturnValue(evaluated)
 }
 
 func extendFunctionEnv(fn *object.Function, args []object.Object) *object.Environment {

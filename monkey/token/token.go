@@ -37,6 +37,8 @@ const (
 	RPAREN   = ")"
 	LSQUIRLY = "{"
 	RSQUIRLY = "}"
+	LSQUARE  = "["
+	RSQUARE  = "]"
 
 	// Keywords
 	FUNCTION = "FUNCTION"

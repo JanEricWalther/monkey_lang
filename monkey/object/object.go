@@ -17,6 +17,7 @@ const (
 	ERROR_OBJ        = "ERROR"
 	FUNCTION_OBJ     = "FUNCTION"
 	STRING_OBJ       = "STRING"
+	ARRAY_OBJ        = "ARRAY"
 	BUILTIN_OBJ      = "BUILTIN"
 )
 
@@ -56,6 +57,27 @@ func (s *String) Type() ObjectType {
 }
 func (s *String) Inspect() string {
 	return s.Value
+}
+
+type Array struct {
+	Elements []Object
+}
+
+func (a *Array) Type() ObjectType {
+	return ARRAY_OBJ
+}
+func (a *Array) Inspect() string {
+	var out bytes.Buffer
+
+	els := []string{}
+	for _, e := range a.Elements {
+		els = append(els, e.Inspect())
+	}
+	out.WriteString("[")
+	out.WriteString(strings.Join(els, ", "))
+	out.WriteString("]")
+
+	return out.String()
 }
 
 type Null struct{}

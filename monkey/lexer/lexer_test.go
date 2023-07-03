@@ -25,6 +25,10 @@ const input = `
 
 	10 == 10;
 	10 != 9;
+	"foobar";
+	"foo bar";
+	[1, 2];
+	{"foo": "bar"}
 `
 
 type expected struct {
@@ -53,12 +57,12 @@ func TestNextToken(t *testing.T) {
 		{token.COMMA, ","},
 		{token.IDENT, "y"},
 		{token.RPAREN, ")"},
-		{token.LSQUIRLY, "{"},
+		{token.LCURLY, "{"},
 		{token.IDENT, "x"},
 		{token.PLUS, "+"},
 		{token.IDENT, "y"},
 		{token.SEMI, ";"},
-		{token.RSQUIRLY, "}"},
+		{token.RCURLY, "}"},
 		{token.SEMI, ";"},
 		{token.LET, "let"},
 		{token.IDENT, "result"},
@@ -88,17 +92,17 @@ func TestNextToken(t *testing.T) {
 		{token.LT, "<"},
 		{token.INT, "10"},
 		{token.RPAREN, ")"},
-		{token.LSQUIRLY, "{"},
+		{token.LCURLY, "{"},
 		{token.RETURN, "return"},
 		{token.TRUE, "true"},
 		{token.SEMI, ";"},
-		{token.RSQUIRLY, "}"},
+		{token.RCURLY, "}"},
 		{token.ELSE, "else"},
-		{token.LSQUIRLY, "{"},
+		{token.LCURLY, "{"},
 		{token.RETURN, "return"},
 		{token.FALSE, "false"},
 		{token.SEMI, ";"},
-		{token.RSQUIRLY, "}"},
+		{token.RCURLY, "}"},
 		{token.INT, "10"},
 		{token.EQ, "=="},
 		{token.INT, "10"},
@@ -107,6 +111,21 @@ func TestNextToken(t *testing.T) {
 		{token.NOT_EQ, "!="},
 		{token.INT, "9"},
 		{token.SEMI, ";"},
+		{token.STRING, "foobar"},
+		{token.SEMI, ";"},
+		{token.STRING, "foo bar"},
+		{token.SEMI, ";"},
+		{token.LSQUARE, "["},
+		{token.INT, "1"},
+		{token.COMMA, ","},
+		{token.INT, "2"},
+		{token.RSQUARE, "]"},
+		{token.SEMI, ";"},
+		{token.LCURLY, "{"},
+		{token.STRING, "foo"},
+		{token.COLON, ":"},
+		{token.STRING, "bar"},
+		{token.RCURLY, "}"},
 		{token.EOF, ""},
 	}
 

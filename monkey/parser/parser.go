@@ -63,6 +63,7 @@ func New(l *lexer.Lexer) (p *Parser) {
 	p.registerPrefix(token.MINUS, p.parsePrefixExpression)
 	p.registerPrefix(token.LSQUARE, p.parseArrayLiteral)
 	p.registerPrefix(token.LPAREN, p.parseGroupedExpression)
+	p.registerPrefix(token.LCURLY, p.parseHashLiteral)
 	p.registerPrefix(token.IF, p.parseIfExpression)
 	p.registerPrefix(token.FUNCTION, p.parseFunctionLiteral)
 	p.registerPrefix(token.STRING, p.parseStringLiteral)
@@ -268,7 +269,7 @@ func (p *Parser) parseIfExpression() ast.Expression {
 	if !p.expectPeek(token.RPAREN) {
 		return nil
 	}
-	if !p.expectPeek(token.LSQUIRLY) {
+	if !p.expectPeek(token.LCURLY) {
 		return nil
 	}
 
@@ -276,7 +277,7 @@ func (p *Parser) parseIfExpression() ast.Expression {
 
 	if p.peekTokenIs(token.ELSE) {
 		p.nextToken()
-		if !p.expectPeek(token.LSQUIRLY) {
+		if !p.expectPeek(token.LCURLY) {
 			return nil
 		}
 		expression.Alternative = p.parseBlockStatement()
@@ -290,7 +291,7 @@ func (p *Parser) parseBlockStatement() *ast.BlockStatement {
 
 	p.nextToken()
 
-	for !p.curTokenIs(token.RSQUIRLY) && !p.curTokenIs(token.EOF) {
+	for !p.curTokenIs(token.RCURLY) && !p.curTokenIs(token.EOF) {
 		statement := p.parseStatement()
 		block.Statements = append(block.Statements, statement)
 		p.nextToken()
@@ -306,7 +307,7 @@ func (p *Parser) parseFunctionLiteral() ast.Expression {
 	}
 	lit.Parameters = p.parseFunctionParameters()
 
-	if !p.expectPeek(token.LSQUIRLY) {
+	if !p.expectPeek(token.LCURLY) {
 		return nil
 	}
 	lit.Body = p.parseBlockStatement()
@@ -385,6 +386,33 @@ func (p *Parser) parseArrayLiteral() ast.Expression {
 	array.Elements = p.parseExpressionList(token.RSQUARE)
 
 	return array
+}
+
+func (p *Parser) parseHashLiteral() ast.Expression {
+	hash := &ast.HashLiteral{Token: p.curToken}
+	hash.Pairs = make(map[ast.Expression]ast.Expression)
+
+	for !p.peekTokenIs(token.RCURLY) {
+		p.nextToken()
+		key := p.parseExpression(LOWEST)
+
+		if !p.expectPeek(token.COLON) {
+			return nil
+		}
+
+		p.nextToken()
+		value := p.parseExpression(LOWEST)
+
+		hash.Pairs[key] = value
+
+		if !p.peekTokenIs(token.RCURLY) && !p.expectPeek(token.COMMA) {
+			return nil
+		}
+	}
+	if !p.expectPeek(token.RCURLY) {
+		return nil
+	}
+	return hash
 }
 
 func (p *Parser) expectPeek(t token.TokenType) bool {

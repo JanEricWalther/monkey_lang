@@ -63,6 +63,8 @@ func (l *Lexer) NextToken() (tok token.Token) {
 		tok = newToken(token.GT, l.ch)
 	case ';':
 		tok = newToken(token.SEMI, l.ch)
+	case ':':
+		tok = newToken(token.COLON, l.ch)
 	case '(':
 		tok = newToken(token.LPAREN, l.ch)
 	case ')':
@@ -72,9 +74,9 @@ func (l *Lexer) NextToken() (tok token.Token) {
 	case ']':
 		tok = newToken(token.RSQUARE, l.ch)
 	case '{':
-		tok = newToken(token.LSQUIRLY, l.ch)
+		tok = newToken(token.LCURLY, l.ch)
 	case '}':
-		tok = newToken(token.RSQUIRLY, l.ch)
+		tok = newToken(token.RCURLY, l.ch)
 	case ',':
 		tok = newToken(token.COMMA, l.ch)
 	case '"':

@@ -32,13 +32,14 @@ const (
 	// Delimiters
 	COMMA = ","
 	SEMI  = ";"
+	COLON = ":"
 
-	LPAREN   = "("
-	RPAREN   = ")"
-	LSQUIRLY = "{"
-	RSQUIRLY = "}"
-	LSQUARE  = "["
-	RSQUARE  = "]"
+	LPAREN  = "("
+	RPAREN  = ")"
+	LCURLY  = "{"
+	RCURLY  = "}"
+	LSQUARE = "["
+	RSQUARE = "]"
 
 	// Keywords
 	FUNCTION = "FUNCTION"

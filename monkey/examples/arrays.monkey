@@ -25,4 +25,6 @@ let double = fn(x) { x * 2 };
 let sum = fn(arr) {
     reduce(arr, 0, fn(initial, el) { initial + el });
 };
-map(a, double);
+print("map:", map(a, double));
+print("sum:", sum(a));
+""

@@ -1,13 +1,18 @@
 package eval
 
-import "monkey/object"
+import (
+	"fmt"
+	"monkey/object"
+	"strings"
+)
 
 var builtins = map[string]*object.Builtin{
-	"len":  {Fn: monkeyLen},
-	"head": {Fn: monkeyHead},
-	"tail": {Fn: monkeyTail},
-	"back": {Fn: monkeyBack},
-	"push": {Fn: monkeyPush},
+	"len":   {Fn: monkeyLen},
+	"head":  {Fn: monkeyHead},
+	"tail":  {Fn: monkeyTail},
+	"back":  {Fn: monkeyBack},
+	"push":  {Fn: monkeyPush},
+	"print": {Fn: monkeyPrint},
 }
 
 func monkeyLen(args ...object.Object) object.Object {
@@ -83,4 +88,13 @@ func monkeyPush(args ...object.Object) object.Object {
 	copy(newElements, arr.Elements)
 	newElements[length] = args[1]
 	return &object.Array{Elements: newElements}
+}
+
+func monkeyPrint(args ...object.Object) object.Object {
+	var out []string
+	for _, arg := range args {
+		out = append(out, arg.Inspect())
+	}
+	fmt.Println(strings.Join(out, " "))
+	return NULL
 }

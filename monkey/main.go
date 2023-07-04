@@ -31,6 +31,7 @@ func runFile(filename string) {
 		os.Exit(1)
 	}
 	input := string(fContent)
+	macroEnv := object.NewEnv()
 
 	lexer := lexer.New(input)
 	parser := parser.New(lexer)
@@ -43,5 +44,7 @@ func runFile(filename string) {
 		}
 		return
 	}
-	eval.Eval(program, object.NewEnv())
+	eval.DefineMacros(program, macroEnv)
+	expanded := eval.ExpandMacros(program, macroEnv)
+	eval.Eval(expanded, object.NewEnv())
 }

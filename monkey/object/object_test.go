@@ -8,15 +8,15 @@ func TestStringHashKey(t *testing.T) {
 	diff1 := &String{Value: "My name is johnny"}
 	diff2 := &String{Value: "My name is johnny"}
 
-	if hello1.HashKey() != hello2.hashKey() {
+	if hello1.HashKey() != hello2.HashKey() {
 		t.Errorf("strings with the same content have different hash keys")
 	}
 
-	if diff1.HashKey() != diff2.hashKey() {
+	if diff1.HashKey() != diff2.HashKey() {
 		t.Errorf("strings with the same content have different hash keys")
 	}
 
-	if hello1.HashKey() == diff1.hashKey() {
+	if hello1.HashKey() == diff1.HashKey() {
 		t.Errorf("strings with different content have different hash keys")
 	}
 }

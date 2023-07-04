@@ -27,4 +27,3 @@ let sum = fn(arr) {
 };
 print("map:", map(a, double));
 print("sum:", sum(a));
-""

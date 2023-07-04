@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"io"
 	"monkey/eval"
 	"monkey/lexer"
 	"monkey/object"
@@ -32,18 +31,20 @@ func runFile(filename string) {
 		os.Exit(1)
 	}
 	input := string(fContent)
+	macroEnv := object.NewEnv()
 
 	lexer := lexer.New(input)
 	parser := parser.New(lexer)
 	program := parser.ParseProgram()
 
 	if len(parser.Errors()) > 0 {
-		// printParserErros(os.Stderr, parser.Errors())
+		fmt.Println("Error parsing program")
+		for _, msg := range parser.Errors() {
+			fmt.Println(msg)
+		}
 		return
 	}
-	evaluated := eval.Eval(program, object.NewEnv())
-	if evaluated != nil {
-		io.WriteString(os.Stdout, evaluated.Inspect())
-		io.WriteString(os.Stdout, "\n")
-	}
+	eval.DefineMacros(program, macroEnv)
+	expanded := eval.ExpandMacros(program, macroEnv)
+	eval.Eval(expanded, object.NewEnv())
 }

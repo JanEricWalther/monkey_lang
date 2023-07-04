@@ -29,6 +29,7 @@ const input = `
 	"foo bar";
 	[1, 2];
 	{"foo": "bar"}
+	macro(x, y) { x + y; };
 `
 
 type expected struct {
@@ -126,6 +127,19 @@ func TestNextToken(t *testing.T) {
 		{token.COLON, ":"},
 		{token.STRING, "bar"},
 		{token.RCURLY, "}"},
+		{token.MACRO, "macro"},
+		{token.LPAREN, "("},
+		{token.IDENT, "x"},
+		{token.COMMA, ","},
+		{token.IDENT, "y"},
+		{token.RPAREN, ")"},
+		{token.LCURLY, "{"},
+		{token.IDENT, "x"},
+		{token.PLUS, "+"},
+		{token.IDENT, "y"},
+		{token.SEMI, ";"},
+		{token.RCURLY, "}"},
+		{token.SEMI, ";"},
 		{token.EOF, ""},
 	}
 

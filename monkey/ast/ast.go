@@ -6,6 +6,7 @@ import (
 	"strings"
 )
 
+// TODO(jan): add file and line number information for debug/error output
 type Node interface {
 	TokenLiteral() string
 	String() string

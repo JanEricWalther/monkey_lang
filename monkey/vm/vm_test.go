@@ -19,7 +19,7 @@ func TestIntegerArithmetic(t *testing.T) {
 	tests := []vmTestCase{
 		{"1", 1},
 		{"2", 2},
-		{"1 + 2", 2}, // TODO(jan): this should later be 3
+		{"1 + 2", 3},
 	}
 
 	runVmTests(t, tests)
@@ -58,7 +58,7 @@ func testExpectedObject(t *testing.T, expected interface{}, acutal object.Object
 	case int:
 		err := testIntegerObject(int64(expected), acutal)
 		if err != nil {
-			t.Errorf("test integer object failed: %s", err)
+			t.Errorf("test integer object failed:\n%s", err)
 		}
 	}
 }

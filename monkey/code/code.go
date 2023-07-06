@@ -6,6 +6,16 @@ import (
 	"fmt"
 )
 
+const (
+	OpConstant Opcode = iota
+	OpAdd
+)
+
+var definitions = map[Opcode]*Definition{
+	OpConstant: {"OpConstant", []int{2}},
+	OpAdd:      {"OpAdd", []int{}},
+}
+
 type Instructions []byte
 
 func (in Instructions) String() string {
@@ -31,6 +41,8 @@ func (in Instructions) fmtInstruction(def *Definition, operands []int) string {
 		return fmt.Sprintf("ERROR: operand len %d does not match defined %d\n", len(operands), opCount)
 	}
 	switch opCount {
+	case 0:
+		return def.Name
 	case 1:
 		return fmt.Sprintf("%s %d", def.Name, operands[0])
 	}
@@ -42,14 +54,6 @@ type Opcode byte
 type Definition struct {
 	Name     string
 	OpWidths []int
-}
-
-const (
-	OpConstant Opcode = iota
-)
-
-var definitions = map[Opcode]*Definition{
-	OpConstant: {"OpConstant", []int{2}},
 }
 
 func Lookup(op byte) (*Definition, error) {

@@ -1,6 +1,7 @@
 package compiler
 
 import (
+	"fmt"
 	"monkey/ast"
 	"monkey/code"
 	"monkey/object"
@@ -41,6 +42,11 @@ func (c *Compiler) Compile(node ast.Node) error {
 		if err != nil {
 			return err
 		}
+		op, err := getOperator(node.Operator)
+		if err != nil {
+			return err
+		}
+		c.emit(op)
 	case *ast.IntegerLiteral:
 		integer := &object.Integer{Value: node.Value}
 		c.emit(code.OpConstant, c.addConstant(integer))
@@ -75,4 +81,12 @@ func (c *Compiler) addInstruction(ins []byte) int {
 type Bytecode struct {
 	Instructions code.Instructions
 	Constants    []object.Object
+}
+
+func getOperator(opString string) (op code.Opcode, err error) {
+	switch opString {
+	case "+":
+		return code.OpAdd, nil
+	}
+	return 0, fmt.Errorf("unkown operator %s", opString)
 }

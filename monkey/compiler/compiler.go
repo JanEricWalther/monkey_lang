@@ -40,6 +40,16 @@ func (c *Compiler) Compile(node ast.Node) error {
 		} else {
 			c.emit(code.OpFalse)
 		}
+	case *ast.PrefixExpression:
+		err := c.Compile(node.Right)
+		if err != nil {
+			return err
+		}
+		op, err := getPrefixOperator(node.Operator)
+		if err != nil {
+			return err
+		}
+		c.emit(op)
 	case *ast.InfixExpression:
 		if node.Operator == "<" {
 			err := c.Compile(node.Right)
@@ -61,7 +71,7 @@ func (c *Compiler) Compile(node ast.Node) error {
 		if err != nil {
 			return err
 		}
-		op, err := getOperator(node.Operator)
+		op, err := getInfixOperator(node.Operator)
 		if err != nil {
 			return err
 		}
@@ -102,7 +112,7 @@ type Bytecode struct {
 	Constants    []object.Object
 }
 
-func getOperator(opString string) (op code.Opcode, err error) {
+func getInfixOperator(opString string) (op code.Opcode, err error) {
 	switch opString {
 	case "+":
 		return code.OpAdd, nil
@@ -118,6 +128,16 @@ func getOperator(opString string) (op code.Opcode, err error) {
 		return code.OpEqual, nil
 	case "!=":
 		return code.OpNotEqual, nil
+	}
+	return 0, fmt.Errorf("unkown operator %s", opString)
+}
+
+func getPrefixOperator(opString string) (op code.Opcode, err error) {
+	switch opString {
+	case "-":
+		return code.OpMinus, nil
+	case "!":
+		return code.OpBang, nil
 	}
 	return 0, fmt.Errorf("unkown operator %s", opString)
 }

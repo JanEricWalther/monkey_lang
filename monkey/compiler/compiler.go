@@ -34,6 +34,12 @@ func (c *Compiler) Compile(node ast.Node) error {
 			return err
 		}
 		c.emit(code.OpPop)
+	case *ast.Boolean:
+		if node.Value {
+			c.emit(code.OpTrue)
+		} else {
+			c.emit(code.OpFalse)
+		}
 	case *ast.InfixExpression:
 		err := c.Compile(node.Left)
 		if err != nil {
@@ -88,6 +94,12 @@ func getOperator(opString string) (op code.Opcode, err error) {
 	switch opString {
 	case "+":
 		return code.OpAdd, nil
+	case "-":
+		return code.OpSub, nil
+	case "*":
+		return code.OpMul, nil
+	case "/":
+		return code.OpDiv, nil
 	}
 	return 0, fmt.Errorf("unkown operator %s", opString)
 }

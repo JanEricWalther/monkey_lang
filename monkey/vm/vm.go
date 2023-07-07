@@ -9,6 +9,9 @@ import (
 
 const StackSize = 2 * 1024
 
+var True = &object.Boolean{Value: true}
+var False = &object.Boolean{Value: false}
+
 type VM struct {
 	constants    []object.Object
 	instructions code.Instructions
@@ -37,13 +40,21 @@ func (vm *VM) Run() error {
 			if err != nil {
 				return err
 			}
-		case code.OpAdd:
-			right := vm.pop()
-			left := vm.pop()
-			leftVal := left.(*object.Integer).Value
-			rightVal := right.(*object.Integer).Value
-			result := leftVal + rightVal
-			vm.push(&object.Integer{Value: result})
+		case code.OpTrue:
+			err := vm.push(True)
+			if err != nil {
+				return err
+			}
+		case code.OpFalse:
+			err := vm.push(False)
+			if err != nil {
+				return err
+			}
+		case code.OpAdd, code.OpSub, code.OpMul, code.OpDiv:
+			err := vm.executeBinaryOparation(op)
+			if err != nil {
+				return err
+			}
 		case code.OpPop:
 			vm.pop()
 		}
@@ -76,4 +87,40 @@ func (vm *VM) pop() object.Object {
 	o := vm.stack[vm.sp-1]
 	vm.sp -= 1
 	return o
+}
+
+func (vm *VM) executeBinaryOparation(op code.Opcode) error {
+
+	right := vm.pop()
+	left := vm.pop()
+
+	leftType := left.Type()
+	rightType := right.Type()
+
+	if leftType == object.INTEGER_OBJ && rightType == object.INTEGER_OBJ {
+		return vm.executeBinaryIntegerOparation(op, left, right)
+	}
+	return fmt.Errorf("unsupported types for binary operation: %s %s", leftType, rightType)
+}
+
+func (vm *VM) executeBinaryIntegerOparation(op code.Opcode, left, right object.Object) error {
+	leftVal := left.(*object.Integer).Value
+	rightVal := right.(*object.Integer).Value
+
+	var result int64
+
+	switch op {
+	case code.OpAdd:
+		result = leftVal + rightVal
+	case code.OpSub:
+		result = leftVal - rightVal
+	case code.OpMul:
+		result = leftVal * rightVal
+	case code.OpDiv:
+		result = leftVal / rightVal
+	default:
+		return fmt.Errorf("unknown integer operator: %d", op)
+	}
+
+	return vm.push(&object.Integer{Value: result})
 }

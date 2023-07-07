@@ -20,8 +20,25 @@ func TestIntegerArithmetic(t *testing.T) {
 		{"1", 1},
 		{"2", 2},
 		{"1 + 2", 3},
+		{"1 - 2", -1},
+		{"1 * 2", 2},
+		{"4 / 2", 2},
+		{"50 / 2 * 2 + 10 - 5", 55},
+		{"5 + 5 + 5 + 5 - 10", 10},
+		{"2 * 2 * 2 * 2 * 2", 32},
+		{"5 * 2 + 10", 20},
+		{"5 + 2 * 10", 25},
+		{"5 * (2 + 10)", 60},
 	}
 
+	runVmTests(t, tests)
+}
+
+func TestBooleanExpression(t *testing.T) {
+	tests := []vmTestCase{
+		{"true", true},
+		{"false", false},
+	}
 	runVmTests(t, tests)
 }
 
@@ -60,6 +77,11 @@ func testExpectedObject(t *testing.T, expected interface{}, acutal object.Object
 		if err != nil {
 			t.Errorf("test integer object failed:\n%s", err)
 		}
+	case bool:
+		err := testBooleanObject(bool(expected), acutal)
+		if err != nil {
+			t.Errorf("test boolean object failed:\n%s", err)
+		}
 	}
 }
 
@@ -70,6 +92,17 @@ func testIntegerObject(expected int64, actual object.Object) error {
 	}
 	if result.Value != expected {
 		return fmt.Errorf("object has wrong value. got %d, expected %d", result.Value, expected)
+	}
+	return nil
+}
+
+func testBooleanObject(expected bool, actual object.Object) error {
+	result, ok := actual.(*object.Boolean)
+	if !ok {
+		return fmt.Errorf("object ist not of type Boolean. got %T (%+v)", actual, actual)
+	}
+	if result.Value != expected {
+		return fmt.Errorf("object has wrong value. got %T, expected %t", result.Value, expected)
 	}
 	return nil
 }

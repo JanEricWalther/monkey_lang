@@ -61,6 +61,15 @@ func (vm *VM) Run() error {
 			if err != nil {
 				return err
 			}
+		case code.OpArray:
+			numElements := int(code.ReadUint16(vm.instructions[ip+1:]))
+			ip += 2
+			array := vm.buildArray(vm.sp-numElements, vm.sp)
+			vm.sp = vm.sp - numElements
+			err := vm.push(array)
+			if err != nil {
+				return err
+			}
 		case code.OpTrue:
 			err := vm.push(True)
 			if err != nil {
@@ -241,6 +250,14 @@ func (vm *VM) executeMinusOperator() error {
 	}
 	value := op.(*object.Integer).Value
 	return vm.push(&object.Integer{Value: -value})
+}
+
+func (vm *VM) buildArray(start, end int) object.Object {
+	elements := make([]object.Object, end-start)
+	for i := start; i < end; i++ {
+		elements[i-start] = vm.stack[i]
+	}
+	return &object.Array{Elements: elements}
 }
 
 func nativeBoolToBooleanObject(b bool) *object.Boolean {

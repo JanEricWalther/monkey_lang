@@ -100,6 +100,7 @@ func (c *Compiler) Compile(node ast.Node) error {
 		if err != nil {
 			return err
 		}
+		// NOTE(jan): 42069 is a placeholder, that gets changed later
 		jumpNotTruthyPos := c.emit(code.OpJumpNotTruthy, 42069)
 		err = c.Compile(node.Consequence)
 		if err != nil {
@@ -108,15 +109,13 @@ func (c *Compiler) Compile(node ast.Node) error {
 		if c.lastInstructionIsPop() {
 			c.removeLastInstruction()
 		}
+		jmpPos := c.emit(code.OpJump, 42069)
+
+		afterConseqPos := len(c.instructions)
+		c.changeOperand(jumpNotTruthyPos, afterConseqPos)
 		if node.Alternative == nil {
-			afterConseqPos := len(c.instructions)
-			c.changeOperand(jumpNotTruthyPos, afterConseqPos)
+			c.emit(code.OpNull)
 		} else {
-			jmpPos := c.emit(code.OpJump, 42069)
-
-			afterConseqPos := len(c.instructions)
-			c.changeOperand(jumpNotTruthyPos, afterConseqPos)
-
 			err := c.Compile(node.Alternative)
 			if err != nil {
 				return err
@@ -124,10 +123,9 @@ func (c *Compiler) Compile(node ast.Node) error {
 			if c.lastInstructionIsPop() {
 				c.removeLastInstruction()
 			}
-
-			afterAlternativePos := len(c.instructions)
-			c.changeOperand(jmpPos, afterAlternativePos)
 		}
+		afterAlternativePos := len(c.instructions)
+		c.changeOperand(jmpPos, afterAlternativePos)
 	}
 	return nil
 }

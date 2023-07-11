@@ -3,6 +3,7 @@ package eval
 import (
 	"fmt"
 	"monkey/object"
+	"os"
 	"strings"
 )
 
@@ -13,6 +14,8 @@ var builtins = map[string]*object.Builtin{
 	"back":  {Fn: monkeyBack},
 	"push":  {Fn: monkeyPush},
 	"print": {Fn: monkeyPrint},
+	"exit":  {Fn: exit},
+	"quit":  {Fn: exit},
 }
 
 func monkeyLen(args ...object.Object) object.Object {
@@ -97,4 +100,9 @@ func monkeyPrint(args ...object.Object) object.Object {
 	}
 	fmt.Println(strings.Join(out, " "))
 	return NULL
+}
+
+func exit(args ...object.Object) object.Object {
+	os.Exit(0)
+	return &object.Null{}
 }

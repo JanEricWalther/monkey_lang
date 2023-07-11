@@ -21,8 +21,8 @@ func main() {
 func startRepl() {
 	fmt.Println("Hello! This is the Monkey programming language!")
 	fmt.Println("Feel free to type in commands")
-	// repl.Start(os.Stdin, os.Stdout)
-	repl.StartCompiled(os.Stdin, os.Stdout)
+	repl.Start(os.Stdin, os.Stdout)
+	// repl.StartCompiled(os.Stdin, os.Stdout)
 }
 
 func runFile(filename string) {

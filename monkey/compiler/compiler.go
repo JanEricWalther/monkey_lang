@@ -17,6 +17,7 @@ type Compiler struct {
 	constants           []object.Object
 	lastInstruction     EmittedInstruction
 	previousInstruction EmittedInstruction
+	symTable            *SymbolTable
 }
 
 func New() *Compiler {
@@ -25,7 +26,15 @@ func New() *Compiler {
 		constants:           []object.Object{},
 		lastInstruction:     EmittedInstruction{},
 		previousInstruction: EmittedInstruction{},
+		symTable:            NewSymbolTable(),
 	}
+}
+
+func NewWithState(s *SymbolTable, constants []object.Object) *Compiler {
+	c := New()
+	c.symTable = s
+	c.constants = constants
+	return c
 }
 
 func (c *Compiler) Compile(node ast.Node) error {
@@ -59,6 +68,19 @@ func (c *Compiler) Compile(node ast.Node) error {
 	case *ast.IntegerLiteral:
 		integer := &object.Integer{Value: node.Value}
 		c.emit(code.OpConstant, c.addConstant(integer))
+	case *ast.LetStatement:
+		err := c.Compile(node.Value)
+		if err != nil {
+			return err
+		}
+		symbol := c.symTable.Define(node.Name.Value)
+		c.emit(code.OpSetGlobal, symbol.Index)
+	case *ast.Identifier:
+		sym, ok := c.symTable.Resolve(node.Value)
+		if !ok {
+			return fmt.Errorf("undefined variable %s", node.Value)
+		}
+		c.emit(code.OpGetGlobal, sym.Index)
 	case *ast.PrefixExpression:
 		err := c.Compile(node.Right)
 		if err != nil {

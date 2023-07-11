@@ -7,7 +7,8 @@ import (
 	"monkey/object"
 )
 
-const StackSize = 2 * 1024
+const StackSize = 2 << 10
+const GlobalsSize = (2 << 15) - 1
 
 var True = &object.Boolean{Value: true}
 var False = &object.Boolean{Value: false}
@@ -18,6 +19,7 @@ type VM struct {
 	instructions code.Instructions
 	stack        []object.Object
 	sp           int // points to next free slot
+	globals      []object.Object
 }
 
 func New(bytecode *compiler.Bytecode) *VM {
@@ -26,18 +28,36 @@ func New(bytecode *compiler.Bytecode) *VM {
 		constants:    bytecode.Constants,
 		stack:        make([]object.Object, StackSize),
 		sp:           0,
+		globals:      make([]object.Object, GlobalsSize),
 	}
 }
 
+func NewWithState(bytecode *compiler.Bytecode, s []object.Object) *VM {
+	vm := New(bytecode)
+	vm.globals = s
+	return vm
+}
+
 func (vm *VM) Run() error {
-	for instP := 0; instP < len(vm.instructions); instP++ {
-		op := code.Opcode(vm.instructions[instP])
+	for ip := 0; ip < len(vm.instructions); ip++ {
+		op := code.Opcode(vm.instructions[ip])
 
 		switch op {
 		case code.OpConstant:
-			constIdx := code.ReadUint16(vm.instructions[instP+1:])
-			instP += 2
+			constIdx := code.ReadUint16(vm.instructions[ip+1:])
+			ip += 2
 			err := vm.push(vm.constants[constIdx])
+			if err != nil {
+				return err
+			}
+		case code.OpSetGlobal:
+			index := code.ReadUint16(vm.instructions[ip+1:])
+			ip += 2
+			vm.globals[index] = vm.pop()
+		case code.OpGetGlobal:
+			index := code.ReadUint16(vm.instructions[ip+1:])
+			ip += 2
+			err := vm.push(vm.globals[index])
 			if err != nil {
 				return err
 			}
@@ -79,14 +99,14 @@ func (vm *VM) Run() error {
 		case code.OpPop:
 			vm.pop()
 		case code.OpJump:
-			pos := int(code.ReadUint16(vm.instructions[instP+1:]))
-			instP = pos - 1
+			pos := int(code.ReadUint16(vm.instructions[ip+1:]))
+			ip = pos - 1
 		case code.OpJumpNotTruthy:
-			pos := int(code.ReadUint16(vm.instructions[instP+1:]))
-			instP += 2
+			pos := int(code.ReadUint16(vm.instructions[ip+1:]))
+			ip += 2
 			condition := vm.pop()
 			if !isTruthy(condition) {
-				instP = pos - 1
+				ip = pos - 1
 			}
 		}
 

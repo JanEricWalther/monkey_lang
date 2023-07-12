@@ -132,6 +132,22 @@ func TestHashLiterals(t *testing.T) {
 	runVmTests(t, tests)
 }
 
+func TestIndexExpressions(t *testing.T) {
+	tests := []vmTestCase{
+		{"[1, 2, 3][1]", 2},
+		{"[1, 2, 3][0 + 2]", 3},
+		{"[[1, 2, 3]][0][0]", 1},
+		{"[][1]", Null},
+		{"[1, 2, 3][99]", Null},
+		{"[1, 2, 3][-1]", Null},
+		{"{1: 2, 3: 4}[1]", 2},
+		{"{1: 2, 3: 4}[3]", 4},
+		{"{1: 2}[3]", Null},
+		{"{}[0]", Null},
+	}
+	runVmTests(t, tests)
+}
+
 func runVmTests(t *testing.T, tests []vmTestCase) {
 	t.Helper()
 
@@ -215,7 +231,6 @@ func testExpectedObject(t *testing.T, expected interface{}, actual object.Object
 				t.Errorf("test integer object failed: %s", err)
 			}
 		}
-
 	}
 }
 

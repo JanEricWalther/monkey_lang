@@ -25,10 +25,14 @@ const (
 	OpNull
 	OpGetGlobal
 	OpSetGlobal
+	OpArray
+	OpHash
+	OpIndex
 )
 
 var definitions = map[Opcode]*Definition{
 	OpConstant:      {"OpConstant", []int{2}},
+	OpNull:          {"OpNull", []int{}},
 	OpPop:           {"OpPop", []int{}},
 	OpAdd:           {"OpAdd", []int{}},
 	OpSub:           {"OpSub", []int{}},
@@ -43,9 +47,11 @@ var definitions = map[Opcode]*Definition{
 	OpBang:          {"OpBang", []int{}},
 	OpJumpNotTruthy: {"OpJumpNotTruthy", []int{2}},
 	OpJump:          {"OpJump", []int{2}},
-	OpNull:          {"OpNull", []int{}},
 	OpGetGlobal:     {"OpGetGlobal", []int{2}},
 	OpSetGlobal:     {"OpSetGlobal", []int{2}},
+	OpArray:         {"OpArray", []int{2}},
+	OpHash:          {"OpHash", []int{2}},
+	OpIndex:         {"OpIndex", []int{}},
 }
 
 type Instructions []byte

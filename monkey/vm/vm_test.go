@@ -68,7 +68,7 @@ func TestBooleanExpression(t *testing.T) {
 	runVmTests(t, tests)
 }
 
-func TestConditionls(t *testing.T) {
+func TestConditionals(t *testing.T) {
 	tests := []vmTestCase{
 		{"if (true) { 10 }", 10},
 		{"if (true) { 10 } else { 20 }", 10},

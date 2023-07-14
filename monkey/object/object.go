@@ -245,8 +245,9 @@ func (m *Macro) Inspect() string {
 }
 
 type CompiledFunction struct {
-	Instruction code.Instructions
-	NumLocals   int
+	Instruction   code.Instructions
+	NumLocals     int
+	NumParameters int
 }
 
 func (f *CompiledFunction) Type() ObjectType {
@@ -254,5 +255,5 @@ func (f *CompiledFunction) Type() ObjectType {
 }
 
 func (f *CompiledFunction) Inspect() string {
-	return fmt.Sprint("CompiledFunction[%p]", f)
+	return fmt.Sprintf("CompiledFunction[%p]", f)
 }

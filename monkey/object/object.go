@@ -5,24 +5,26 @@ import (
 	"fmt"
 	"hash/fnv"
 	"monkey/ast"
+	"monkey/code"
 	"strings"
 )
 
 type ObjectType string
 
 const (
-	INTEGER_OBJ      = "INTEGER"
-	BOOLEAN_OBJ      = "BOOLEAN"
-	NULL_OBJ         = "NULL"
-	RETURN_VALUE_OBJ = "RETURN_VALUE"
-	ERROR_OBJ        = "ERROR"
-	FUNCTION_OBJ     = "FUNCTION"
-	STRING_OBJ       = "STRING"
-	ARRAY_OBJ        = "ARRAY"
-	BUILTIN_OBJ      = "BUILTIN"
-	HASH_OBJ         = "HASH"
-	QUOTE_OBJ        = "QUOTE"
-	MACRO_OBJ        = "MACRO"
+	INTEGER_OBJ           = "INTEGER"
+	BOOLEAN_OBJ           = "BOOLEAN"
+	NULL_OBJ              = "NULL"
+	RETURN_VALUE_OBJ      = "RETURN_VALUE"
+	ERROR_OBJ             = "ERROR"
+	FUNCTION_OBJ          = "FUNCTION"
+	COMPILED_FUNCTION_OBJ = "COMPILED_FUNCTION_OBJ"
+	STRING_OBJ            = "STRING"
+	ARRAY_OBJ             = "ARRAY"
+	BUILTIN_OBJ           = "BUILTIN"
+	HASH_OBJ              = "HASH"
+	QUOTE_OBJ             = "QUOTE"
+	MACRO_OBJ             = "MACRO"
 )
 
 type Object interface {
@@ -240,4 +242,18 @@ func (m *Macro) Inspect() string {
 	out.WriteString("\n}")
 
 	return out.String()
+}
+
+type CompiledFunction struct {
+	Instruction   code.Instructions
+	NumLocals     int
+	NumParameters int
+}
+
+func (f *CompiledFunction) Type() ObjectType {
+	return COMPILED_FUNCTION_OBJ
+}
+
+func (f *CompiledFunction) Inspect() string {
+	return fmt.Sprintf("CompiledFunction[%p]", f)
 }

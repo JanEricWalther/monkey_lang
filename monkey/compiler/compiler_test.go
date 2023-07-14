@@ -486,6 +486,8 @@ func TestCompilerScopes(t *testing.T) {
 	if compiler.scopeIndex != 0 {
 		t.Errorf("scope index wrong. expected %d, got %d", 0, compiler.scopeIndex)
 	}
+	globalSymbolTable := compiler.symTable
+
 	compiler.emit(code.OpMul)
 	compiler.enterScope()
 
@@ -502,10 +504,22 @@ func TestCompilerScopes(t *testing.T) {
 		t.Errorf("last instruction op code wrong. expected %d, got %d", code.OpSub, last.Opcode)
 	}
 
+	if compiler.symTable.Outer != globalSymbolTable {
+		t.Errorf("compiler did not enclose symbol table")
+	}
+
 	compiler.leaveScope()
 	if compiler.scopeIndex != 0 {
 		t.Errorf("scope index wrong. expected %d, got %d", 0, compiler.scopeIndex)
 	}
+
+	if compiler.symTable != globalSymbolTable {
+		t.Errorf("compiler did not restore global symbol table")
+	}
+	if compiler.symTable.Outer != nil {
+		t.Errorf("compiler modified global symbol table incorrectly")
+	}
+
 	compiler.emit(code.OpAdd)
 	if len(compiler.scopes[compiler.scopeIndex].instructions) != 2 {
 		t.Errorf("wrong instruction length. expected %d, got %d", 2, len(compiler.scopes[compiler.scopeIndex].instructions))
@@ -553,6 +567,75 @@ func TestFunctionCalls(t *testing.T) {
 				code.Make(code.OpSetGlobal, 0),
 				code.Make(code.OpGetGlobal, 0),
 				code.Make(code.OpCall),
+				code.Make(code.OpPop),
+			},
+		},
+	}
+	runCompilerTests(t, tests)
+}
+
+func TestLetStatementScopes(t *testing.T) {
+	tests := []compilerTestCase{
+		{
+			input: `let num = 55;
+					fn() { num }`,
+			expectedConstants: []interface{}{
+				55,
+				[]code.Instructions{
+					code.Make(code.OpGetGlobal, 0),
+					code.Make(code.OpReturnValue),
+				},
+			},
+			expectedInstructions: []code.Instructions{
+				code.Make(code.OpConstant, 0),
+				code.Make(code.OpSetGlobal, 0),
+				code.Make(code.OpConstant, 1),
+				code.Make(code.OpPop),
+			},
+		},
+		{
+			input: `
+			fn() {
+				let num = 55;
+				num
+			}`,
+			expectedConstants: []interface{}{
+				55,
+				[]code.Instructions{
+					code.Make(code.OpConstant, 0),
+					code.Make(code.OpSetLocal, 0),
+					code.Make(code.OpGetLocal, 0),
+					code.Make(code.OpReturnValue),
+				},
+			},
+			expectedInstructions: []code.Instructions{
+				code.Make(code.OpConstant, 1),
+				code.Make(code.OpPop),
+			},
+		},
+		{
+			input: `
+			fn() {
+				let a = 55;
+				let b = 77;
+				a + b
+			}`,
+			expectedConstants: []interface{}{
+				55,
+				77,
+				[]code.Instructions{
+					code.Make(code.OpConstant, 0),
+					code.Make(code.OpSetLocal, 0),
+					code.Make(code.OpConstant, 1),
+					code.Make(code.OpSetLocal, 1),
+					code.Make(code.OpGetLocal, 0),
+					code.Make(code.OpGetLocal, 1),
+					code.Make(code.OpAdd),
+					code.Make(code.OpReturnValue),
+				},
+			},
+			expectedInstructions: []code.Instructions{
+				code.Make(code.OpConstant, 2),
 				code.Make(code.OpPop),
 			},
 		},

@@ -72,11 +72,11 @@ func TestConditionals(t *testing.T) {
 	tests := []vmTestCase{
 		{"if (true) { 10 }", 10},
 		{"if (true) { 10 } else { 20 }", 10},
-		{"if (false) { 10 } else { 20 }", 20},
+		{"if (false) { 12 } else { 20 }", 20},
 		{"if (1) { 10 }", 10},
 		{"if (1 < 2) { 10 }", 10},
-		{"if (0) { 10 } else { 20 }", 20},
-		{"if ((if (false) { 10 })) { 10 } else { 20 }", 20},
+		{"if (0) { 13 } else { 20 }", 20},
+		{"if ((if (false) { 14 })) { 15 } else { 20 }", 20},
 	}
 	runVmTests(t, tests)
 }
@@ -144,6 +144,67 @@ func TestIndexExpressions(t *testing.T) {
 		{"{1: 2, 3: 4}[3]", 4},
 		{"{1: 2}[3]", Null},
 		{"{}[0]", Null},
+	}
+	runVmTests(t, tests)
+}
+
+func TestCallingFunctionsWithoutArguments(t *testing.T) {
+	tests := []vmTestCase{
+		{
+			input: `let fivePlusTen = fn() { 5 + 10; };
+					fivePlusTen();
+			`,
+			expected: 15,
+		},
+		{
+			input: `let one = fn() { 1; };
+					let two = fn() { 2; };
+					one() + two();
+			`,
+			expected: 3,
+		},
+		{
+			input: `let a = fn() { 1 };
+					let b = fn() { a() + 1 };
+					let c = fn() { return b() + 1; };
+					c()
+			`,
+			expected: 3,
+		},
+	}
+	runVmTests(t, tests)
+}
+
+func TestCallingFunctionsWithReturnStatement(t *testing.T) {
+	tests := []vmTestCase{
+		{
+			input: `let earlyExit = fn() { return 99; return 100; };
+			earlyExit();`,
+			expected: 99,
+		},
+		{
+			input: `let earlyExit = fn() { return 99; 100; };
+			earlyExit();`,
+			expected: 99,
+		},
+	}
+	runVmTests(t, tests)
+}
+
+func TestFunctionsWithoutReturnValue(t *testing.T) {
+	tests := []vmTestCase{
+		{
+			input: `let noReturn = fn() {};
+					noReturn();`,
+			expected: Null,
+		},
+		{
+			input: `let noReturn = fn() {};
+			  		let noReturnTwo = fn() { noReturn(); };
+					noReturn();
+					noReturnTwo();`,
+			expected: Null,
+		},
 	}
 	runVmTests(t, tests)
 }

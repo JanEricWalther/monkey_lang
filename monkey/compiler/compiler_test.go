@@ -616,7 +616,7 @@ func TestFunctionCalls(t *testing.T) {
 			expectedConstants: []interface{}{
 				[]code.Instructions{
 					code.Make(code.OpGetLocal, 0),
-					code.Make(code.OpReturn),
+					code.Make(code.OpReturnValue),
 				},
 				24,
 			},
@@ -639,7 +639,7 @@ func TestFunctionCalls(t *testing.T) {
 					code.Make(code.OpGetLocal, 1),
 					code.Make(code.OpPop),
 					code.Make(code.OpGetLocal, 2),
-					code.Make(code.OpReturn),
+					code.Make(code.OpReturnValue),
 				},
 				24,
 				25,

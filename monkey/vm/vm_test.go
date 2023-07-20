@@ -353,6 +353,46 @@ func TestFirstClassFunctions(t *testing.T) {
 	runVmTests(t, tests)
 }
 
+func TestBuiltinFunctions(t *testing.T) {
+	tests := []vmTestCase{
+		{`len("")`, 0},
+		{`len("four")`, 4},
+		{`len("hello world")`, 11},
+		{
+			`len(1)`,
+			&object.Error{
+				Message: "argument to `len` not supported, got INTEGER",
+			},
+		},
+		{
+			`len("one", "two")`,
+			&object.Error{
+				Message: "wrong number of arguments. got 2, expected 1",
+			},
+		},
+		{`len([])`, 0},
+		{`len([1, 2, 3])`, 3},
+		{`print("hello", "world")`, Null},
+		{`first([1, 2, 4])`, 1},
+		{`first([])`, Null},
+		{`last([1, 2, 3])`, 3},
+		{
+			`tail(1)`,
+			&object.Error{
+				Message: "argument to `tail` must be ARRAY, got INTEGER",
+			},
+		},
+		{`push([], 1)`, []int{1}},
+		{
+			`push(1, 1)`,
+			&object.Error{
+				Message: "argument to `push` must be ARRAY, got INTEGER",
+			},
+		},
+	}
+	runVmTests(t, tests)
+}
+
 func runVmTests(t *testing.T, tests []vmTestCase) {
 	t.Helper()
 
@@ -435,6 +475,15 @@ func testExpectedObject(t *testing.T, expected interface{}, actual object.Object
 			if err != nil {
 				t.Errorf("test integer object failed: %s", err)
 			}
+		}
+	case *object.Error:
+		errObj, ok := actual.(*object.Error)
+		if !ok {
+			t.Errorf("object is not Error: %T (%+v)", actual, actual)
+			return
+		}
+		if errObj.Message != expected.Message {
+			t.Errorf("wrong error message. expected %q, got %q", expected.Message, errObj.Message)
 		}
 	}
 }

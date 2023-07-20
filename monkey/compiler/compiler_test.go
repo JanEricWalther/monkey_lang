@@ -729,6 +729,43 @@ func TestLetStatementScopes(t *testing.T) {
 	runCompilerTests(t, tests)
 }
 
+func TestBuiltins(t *testing.T) {
+	tests := []compilerTestCase{
+		{
+			input: `len([]);
+					push([], 1);`,
+			expectedConstants: []interface{}{1},
+			expectedInstructions: []code.Instructions{
+				code.Make(code.OpGetBuiltin, findBuiltinIndex("len")),
+				code.Make(code.OpArray, 0),
+				code.Make(code.OpCall, 1),
+				code.Make(code.OpPop),
+				code.Make(code.OpGetBuiltin, findBuiltinIndex("push")),
+				code.Make(code.OpArray, 0),
+				code.Make(code.OpConstant, 0),
+				code.Make(code.OpCall, 2),
+				code.Make(code.OpPop),
+			},
+		},
+		{
+			input: `fn() { len([]) }`,
+			expectedConstants: []interface{}{
+				[]code.Instructions{
+					code.Make(code.OpGetBuiltin, findBuiltinIndex("len")),
+					code.Make(code.OpArray, 0),
+					code.Make(code.OpCall, 1),
+					code.Make(code.OpReturnValue),
+				},
+			},
+			expectedInstructions: []code.Instructions{
+				code.Make(code.OpConstant, 0),
+				code.Make(code.OpPop),
+			},
+		},
+	}
+	runCompilerTests(t, tests)
+}
+
 func runCompilerTests(t *testing.T, tests []compilerTestCase) {
 	t.Helper()
 
@@ -766,7 +803,7 @@ func testInstructions(expected []code.Instructions, actual code.Instructions) er
 
 	for i, ins := range concatInst {
 		if actual[i] != ins {
-			return fmt.Errorf("wrong instruction at %d:\nexpected %q\ngot\t %q", i, ins, actual[i])
+			return fmt.Errorf("wrong instruction at %d:\nexpected %+v\ngot\t %+v", i, ins, actual[i])
 		}
 	}
 	return nil
@@ -834,4 +871,16 @@ func testStringObject(expected string, actual object.Object) error {
 		return fmt.Errorf("object has wrong value. got %s, expected %s", result.Value, expected)
 	}
 	return nil
+}
+
+// NOTE(jan): finding the Index of the Bultin function
+// at the time of testing is better than hard coding,
+// in case the positions change/ new builtins get added in between
+func findBuiltinIndex(name string) int {
+	for i, f := range object.Builtins {
+		if f.Name == name {
+			return i
+		}
+	}
+	return -1
 }

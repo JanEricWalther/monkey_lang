@@ -37,9 +37,14 @@ func New() *Compiler {
 		lastInstruction:     EmittedInstruction{},
 		previousInstruction: EmittedInstruction{},
 	}
+	symTable := NewSymbolTable()
+
+	for i, v := range object.Builtins {
+		symTable.DefineBuiltin(i, v.Name)
+	}
 	return &Compiler{
 		constants:  []object.Object{},
-		symTable:   NewSymbolTable(),
+		symTable:   symTable,
 		scopes:     []CopmilationScope{mainScope},
 		scopeIndex: 0,
 	}
@@ -132,11 +137,7 @@ func (c *Compiler) Compile(node ast.Node) error {
 		if !ok {
 			return fmt.Errorf("undefined variable %s", node.Value)
 		}
-		if sym.Scope == GlobalScope {
-			c.emit(code.OpGetGlobal, sym.Index)
-		} else {
-			c.emit(code.OpGetLocal, sym.Index)
-		}
+		c.loadSymbol(sym)
 	case *ast.PrefixExpression:
 		err := c.Compile(node.Right)
 		if err != nil {
@@ -389,4 +390,15 @@ func (c *Compiler) leaveScope() code.Instructions {
 	c.scopeIndex -= 1
 	c.symTable = c.symTable.Outer
 	return instructions
+}
+
+func (c *Compiler) loadSymbol(s Symbol) {
+	switch s.Scope {
+	case GlobalScope:
+		c.emit(code.OpGetGlobal, s.Index)
+	case LocalScope:
+		c.emit(code.OpGetLocal, s.Index)
+	case BuiltinScope:
+		c.emit(code.OpGetBuiltin, s.Index)
+	}
 }

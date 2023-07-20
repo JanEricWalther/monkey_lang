@@ -63,6 +63,9 @@ func StartCompiled(in io.Reader, out io.Writer) {
 	constants := []object.Object{}
 	globals := make([]object.Object, vm.GlobalsSize)
 	symTable := compiler.NewSymbolTable()
+	for i, v := range object.Builtins {
+		symTable.DefineBuiltin(i, v.Name)
+	}
 
 	for {
 		fmt.Fprint(out, PROMPT)

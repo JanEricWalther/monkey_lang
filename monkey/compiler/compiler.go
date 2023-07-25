@@ -122,11 +122,12 @@ func (c *Compiler) Compile(node ast.Node) error {
 		c.emit(code.OpHash, len(node.Pairs)*2)
 
 	case *ast.LetStatement:
+		symbol := c.symTable.Define(node.Name.Value)
 		err := c.Compile(node.Value)
 		if err != nil {
 			return err
 		}
-		symbol := c.symTable.Define(node.Name.Value)
+
 		if symbol.Scope == GlobalScope {
 			c.emit(code.OpSetGlobal, symbol.Index)
 		} else {
@@ -219,6 +220,10 @@ func (c *Compiler) Compile(node ast.Node) error {
 	case *ast.FunctionLiteral:
 		c.enterScope()
 
+		if node.Name != "" {
+			c.symTable.DefineFunctionName(node.Name)
+		}
+
 		for _, param := range node.Parameters {
 			c.symTable.Define(param.Value)
 		}
@@ -234,15 +239,22 @@ func (c *Compiler) Compile(node ast.Node) error {
 			c.emit(code.OpReturn)
 		}
 
+		freeSymbols := c.symTable.FreeSymbols
 		numLocals := c.symTable.numDefinitions
 		instructions := c.leaveScope()
 
+		for _, s := range freeSymbols {
+			c.loadSymbol(s)
+		}
+
 		compiledFn := &object.CompiledFunction{
-			Instruction:   instructions,
+			Instructions:  instructions,
 			NumLocals:     numLocals,
 			NumParameters: len(node.Parameters),
 		}
-		c.emit(code.OpConstant, c.addConstant(compiledFn))
+
+		fnIdx := c.addConstant(compiledFn)
+		c.emit(code.OpClosure, fnIdx, len(freeSymbols))
 	case *ast.ReturnStatement:
 		err := c.Compile(node.ReturnValue)
 		if err != nil {
@@ -400,5 +412,9 @@ func (c *Compiler) loadSymbol(s Symbol) {
 		c.emit(code.OpGetLocal, s.Index)
 	case BuiltinScope:
 		c.emit(code.OpGetBuiltin, s.Index)
+	case FreeScope:
+		c.emit(code.OpGetFree, s.Index)
+	case FunctionScope:
+		c.emit(code.OpCurrentClosure)
 	}
 }

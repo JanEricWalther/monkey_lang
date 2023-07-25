@@ -25,6 +25,7 @@ const (
 	HASH_OBJ              = "HASH"
 	QUOTE_OBJ             = "QUOTE"
 	MACRO_OBJ             = "MACRO"
+	CLOSURE_OBJ           = "CLOSURE"
 )
 
 type Object interface {
@@ -256,4 +257,16 @@ func (f *CompiledFunction) Type() ObjectType {
 
 func (f *CompiledFunction) Inspect() string {
 	return fmt.Sprintf("CompiledFunction[%p]", f)
+}
+
+type Closure struct {
+	Fn   *CompiledFunction
+	Free []Object
+}
+
+func (c *Closure) Type() ObjectType {
+	return CLOSURE_OBJ
+}
+func (c *Closure) Inspect() string {
+	return fmt.Sprintf("Closure[%p]", c)
 }

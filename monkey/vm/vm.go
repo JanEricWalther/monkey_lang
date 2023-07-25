@@ -25,7 +25,7 @@ type VM struct {
 }
 
 func New(bytecode *compiler.Bytecode) *VM {
-	mainFn := &object.CompiledFunction{Instruction: bytecode.Instructions}
+	mainFn := &object.CompiledFunction{Instructions: bytecode.Instructions}
 	mainClosure := &object.Closure{Fn: mainFn}
 	mainFrame := NewFrame(mainClosure, 0)
 	frames := make([]*Frame, MaxFrames)
@@ -190,6 +190,12 @@ func (vm *VM) Run() error {
 			vm.currentFrame().ip += 1
 
 			err := vm.executeCall(int(numArgs))
+			if err != nil {
+				return err
+			}
+		case code.OpCurrentClosure:
+			currentClosure := vm.currentFrame().cl
+			err := vm.push(currentClosure)
 			if err != nil {
 				return err
 			}

@@ -246,7 +246,7 @@ func (m *Macro) Inspect() string {
 }
 
 type CompiledFunction struct {
-	Instruction   code.Instructions
+	Instructions  code.Instructions
 	NumLocals     int
 	NumParameters int
 }

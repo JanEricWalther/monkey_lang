@@ -830,6 +830,33 @@ func TestHashLiteralExpressions(t *testing.T) {
 	}
 }
 
+func TestFunctioniLiteralWithName(t *testing.T) {
+	input := `let myFunction = fn() { };`
+
+	l := lexer.New(input)
+	p := New(l)
+	program := p.ParseProgram()
+	checkParserErrors(t, p)
+
+	if len(program.Statements) != 1 {
+		t.Fatalf("program has not %d statement(s). got %d", 1, len(program.Statements))
+	}
+
+	statement, ok := program.Statements[0].(*ast.LetStatement)
+	if !ok {
+		t.Fatalf("program.Statements[0] is not ast.LetStatement. got %T", program.Statements[0])
+	}
+
+	function, ok := statement.Value.(*ast.FunctionLiteral)
+	if !ok {
+		t.Fatalf("statement.Value is not ast.FunctionLiteral. got %T", statement.Value)
+	}
+
+	if function.Name != "myFunction" {
+		t.Fatalf("function literal name wrong. expected %q. got %q", "myFunction", function.Name)
+	}
+}
+
 func TestMacroLiteral(t *testing.T) {
 	input := `macro(x, y) { x + y; }`
 	l := lexer.New(input)

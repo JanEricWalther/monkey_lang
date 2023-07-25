@@ -20,5 +20,5 @@ func NewFrame(cl *object.Closure, basePointer int) *Frame {
 }
 
 func (f *Frame) Instructions() code.Instructions {
-	return f.cl.Fn.Instruction
+	return f.cl.Fn.Instructions
 }
